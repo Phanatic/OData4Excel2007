@@ -92,6 +92,29 @@
         ///A test for BeginDownload
         ///</summary>
         [TestMethod()]
+        public void TimeoutOnDownloadTests()
+        {
+            IODataFeedClient target = new ConnectedODataFeedClient();
+            target.Timeout = 0.5 * 1000;
+            string requestUri = "http://odata.netflix.com/v2/Catalog/Titles?$top=400&$expand=Genres";
+            AutoResetEvent resetEvent = new AutoResetEvent(false);
+            ODataFeedDownloadArgs eventArgs = null;
+            target.FeedDownloaded += (sender, args) =>
+            {
+                eventArgs = args;
+                Assert.IsTrue(args.IsTimedOut, "Timeout expected");
+                Assert.IsNull(args.Error, "No error expected");
+                Assert.IsNull(args.TotalCount, "No count expected");
+            };
+
+            IAsyncResult expected = target.BeginDownload(requestUri);
+            expected.AsyncWaitHandle.WaitOne();
+        }
+
+        /// <summary>
+        ///A test for BeginDownload
+        ///</summary>
+        [TestMethod()]
         public void CancelDownloadTest()
         {
             IODataFeedClient target = new ConnectedODataFeedClient();

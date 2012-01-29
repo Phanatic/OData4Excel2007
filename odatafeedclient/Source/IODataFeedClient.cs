@@ -19,6 +19,11 @@ namespace ODataFeedClient
         event EventHandler<ODataFeedDownloadArgs> FeedDownloaded;
 
         /// <summary>
+        /// Gets or sets the timeout,in milliseconds, before the current request times out
+        /// </summary>
+        double? Timeout { get; set; }
+        
+        /// <summary>
         /// Begins downloading the OData feed located at <paramref name="requestUri"/>
         /// </summary>
         /// <param name="requestUri">Location of OData feed</param>

@@ -14,6 +14,7 @@ namespace ODataFeedClient
     using Microsoft.Data.OData;
     using ODataFeedClient.Messages;
     using ODataFeedClient.Objects;
+    using System.Threading;
 
     /// <summary>
     /// This type provides OData feed download support for an Http Url
@@ -26,6 +27,11 @@ namespace ODataFeedClient
         private bool requestCancelled;
 
         /// <summary>
+        /// internal flag indicating whether the current request has timed out.
+        /// </summary>
+        private bool requestTimedOut;
+
+        /// <summary>
         /// Current HttpWebRequest object being used to download OData feeds.
         /// </summary>
         private HttpWebRequest currentRequest;
@@ -34,6 +40,11 @@ namespace ODataFeedClient
         /// This event is raised when the download completes.
         /// </summary>
         public event EventHandler<ODataFeedDownloadArgs> FeedDownloaded;
+
+        /// <summary>
+        /// Gets or sets the timeout,in milliseconds, before the current request times out
+        /// </summary>
+        public double? Timeout { get; set; }
 
         /// <summary>
         /// Begins downloading the OData feed located at <paramref name="requestUri"/>
@@ -68,8 +79,8 @@ namespace ODataFeedClient
         private IAsyncResult BeginDownloadResults(Uri requestUri, ODataFormat format)
         {
             this.requestCancelled = false;
+            this.requestTimedOut = false;
             this.currentRequest = (HttpWebRequest)System.Net.HttpWebRequest.Create(requestUri);
-
             if (format == ODataFormat.Atom)
             {
                 this.currentRequest.Accept = "application/atom+xml";
@@ -79,7 +90,26 @@ namespace ODataFeedClient
                 this.currentRequest.Accept = "application/json";
             }
 
-            return this.currentRequest.BeginGetResponse(this.RequestCallback, this.currentRequest);
+            IAsyncResult result = this.currentRequest.BeginGetResponse(this.RequestCallback, this.currentRequest);
+            if (this.Timeout != null)
+            {
+                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback), currentRequest, TimeSpan.FromMilliseconds(this.Timeout.Value), true);
+            }
+
+            return result;
+        }
+
+        private void TimeoutCallback(object state, bool timedOut)
+        {
+            if (timedOut)
+            {
+                HttpWebRequest request = state as HttpWebRequest;
+                if (request != null)
+                {
+                    this.requestTimedOut = true;
+                    request.Abort();
+                }
+            }
         }
 
         /// <summary>
@@ -96,7 +126,7 @@ namespace ODataFeedClient
             }
             catch (Exception requestException)
             {
-                if (this.requestCancelled)
+                if (this.requestCancelled || this.requestTimedOut)
                 {
                     this.RaiseFeedDownloaded(Enumerable.Empty<ODataEntity>(), null, null, null);
                 }
@@ -243,7 +273,7 @@ namespace ODataFeedClient
         {
             if (this.FeedDownloaded != null)
             {
-                this.FeedDownloaded(this, new ODataFeedDownloadArgs(odataEntities, totalCount, nextPageLink, readingError, this.requestCancelled));
+                this.FeedDownloaded(this, new ODataFeedDownloadArgs(odataEntities, totalCount, nextPageLink, readingError, this.requestCancelled, this.requestTimedOut));
             }
         }
     }

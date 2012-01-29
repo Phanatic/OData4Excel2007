@@ -23,13 +23,15 @@ namespace ODataFeedClient
         /// <param name="nextLinkUri">Next Link Uri to next page of results.</param>
         /// <param name="error">Any erorr which occured during download of OData payload.</param>
         /// <param name="isCancelled">A boolean flag indicating whether the request was cancelled by user.</param>
-        public ODataFeedDownloadArgs(IEnumerable<ODataEntity> entries, long? totalCount, Uri nextLinkUri, Exception error, bool isCancelled)
+        /// <param name="isTimedOut">A boolean flag indicating whether the request timed out.</param>
+        public ODataFeedDownloadArgs(IEnumerable<ODataEntity> entries, long? totalCount, Uri nextLinkUri, Exception error, bool isCancelled, bool isTimedOut)
         {
             this.Entries = entries;
             this.TotalCount = totalCount;
             this.NextLinkUri = nextLinkUri;
             this.Error = error;
             this.IsCancelled = isCancelled;
+            this.IsTimedOut = isTimedOut;
         }
 
         /// <summary>
@@ -56,5 +58,10 @@ namespace ODataFeedClient
         /// Gets a value indicating whether the request was cancelled by user.
         /// </summary>
         public bool IsCancelled { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the request was cancelled by user.
+        /// </summary>
+        public bool IsTimedOut { get; private set; }
     }
 }

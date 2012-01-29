@@ -11,10 +11,10 @@ namespace ODataFeedClient
     using System.Diagnostics;
     using System.Linq;
     using System.Net;
+    using System.Threading;
     using Microsoft.Data.OData;
     using ODataFeedClient.Messages;
     using ODataFeedClient.Objects;
-    using System.Threading;
 
     /// <summary>
     /// This type provides OData feed download support for an Http Url
@@ -93,21 +93,26 @@ namespace ODataFeedClient
             IAsyncResult result = this.currentRequest.BeginGetResponse(this.RequestCallback, this.currentRequest);
             if (this.Timeout != null)
             {
-                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback), currentRequest, TimeSpan.FromMilliseconds(this.Timeout.Value), true);
+                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(this.TimeoutCallback), this.currentRequest, TimeSpan.FromMilliseconds(this.Timeout.Value), true);
             }
 
             return result;
         }
 
+        /// <summary>
+        /// Callback to invoke when the current request times out.
+        /// </summary>
+        /// <param name="state">The request state in case the request times out.</param>
+        /// <param name="timedOut">A value indicating whether the current request timed out.</param>
         private void TimeoutCallback(object state, bool timedOut)
         {
             if (timedOut)
             {
-                HttpWebRequest request = state as HttpWebRequest;
-                if (request != null)
+                HttpWebRequest runningRequest = state as HttpWebRequest;
+                if (runningRequest != null)
                 {
                     this.requestTimedOut = true;
-                    request.Abort();
+                    runningRequest.Abort();
                 }
             }
         }

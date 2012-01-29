@@ -3,10 +3,10 @@
     using System;
     using System.Linq;
     using System.Threading;
+    using Microsoft.Data.OData;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using ODataFeedClient;
     using ODataFeedClient.Objects;
-    using Microsoft.Data.OData;
 
     /// <summary>
     ///This is a test class for ConnectedODataFeedClientTest and is intended

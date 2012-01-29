@@ -63,7 +63,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ODataFeedClient.csproj">
+    <ProjectReference Include="..\..\Source\ODataFeedClient.csproj">
       <Project>{64D2A757-967D-4ACC-BC99-DCADB6C1BD3F}</Project>
       <Name>ODataFeedClient</Name>
     </ProjectReference>

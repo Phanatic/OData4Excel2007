@@ -60,7 +60,7 @@ namespace ODataFeedClient
         public bool IsCancelled { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether the request was cancelled by user.
+        /// Gets a value indicating whether the request was timed out.
         /// </summary>
         public bool IsTimedOut { get; private set; }
     }

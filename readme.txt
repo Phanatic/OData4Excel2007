@@ -12,4 +12,4 @@ Doesn't support :
 1. Materialization of Expanded navigation properties.
 2. Materialization of Collection values.
 3. Auth schemes other than NTLM.
-4. nothing else matters.
+4. nothing else matters, again.
